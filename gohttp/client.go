@@ -124,6 +124,8 @@ import "net/http"
 
 // public interface, loosely coupled
 type HttpClient interface {
+	SetHeaders(http.Header)
+
 	Get(string, http.Header) (*http.Response, error)
 	Post(string, http.Header, interface{}) (*http.Response, error)
 	Put(string, http.Header, interface{}) (*http.Response, error)
@@ -135,6 +137,7 @@ type HttpClient interface {
 // so create function to return implementation
 // can't have pointer to interface, just interface cause
 // it can't be instantiated
+// CAN DEFINE DEFAULT HEADERS HERE, allow default configuration establish
 func NewClient() HttpClient {
 	// returns a pointer to httpClient
 	client := &httpClient{}
@@ -144,6 +147,7 @@ func NewClient() HttpClient {
 // for a struct to be consider http client must implement functions above
 // provides all functionality for the http client
 type httpClient struct {
+	Headers http.Header
 }
 
 // method not a package function, gohttp.Get() versus client.Get()
@@ -156,6 +160,12 @@ type httpClient struct {
 // are reference types though.
 // http.Header is alias for ->
 // type Header map[string][]string
+// need to define it as part of the interface if not will be accesisble
+// but not in the logical unti
+func (c *httpClient) SetHeaders(headers http.Header) {
+	c.Headers = headers
+}
+
 func (c *httpClient) Get(url string, headers http.Header) (*http.Response, error) {
 	return c.do(http.MethodGet, url, headers, nil)
 }
